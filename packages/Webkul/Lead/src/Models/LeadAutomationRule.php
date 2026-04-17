@@ -5,6 +5,7 @@ namespace Webkul\Lead\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Webkul\Lead\Contracts\LeadAutomationRule as LeadAutomationRuleContract;
+use Webkul\Tag\Models\Tag;
 
 class LeadAutomationRule extends Model implements LeadAutomationRuleContract
 {
@@ -56,7 +57,7 @@ class LeadAutomationRule extends Model implements LeadAutomationRuleContract
         });
 
         return $this->condition_logic === 'and'
-            ? $results->every(fn($r) => $r === true)
+            ? $results->every(fn ($r) => $r === true)
             : $results->contains(true);
     }
 
@@ -93,7 +94,7 @@ class LeadAutomationRule extends Model implements LeadAutomationRuleContract
             return;
         }
 
-        $tag = \Webkul\Tag\Models\Tag::where('name', $tagName)->first();
+        $tag = Tag::where('name', $tagName)->first();
         if ($tag) {
             $lead->tags()->syncWithoutDetaching([$tag->id]);
         }
@@ -106,7 +107,7 @@ class LeadAutomationRule extends Model implements LeadAutomationRuleContract
             return;
         }
 
-        $tag = \Webkul\Tag\Models\Tag::where('name', $tagName)->first();
+        $tag = Tag::where('name', $tagName)->first();
         if ($tag) {
             $lead->tags()->detach($tag->id);
         }

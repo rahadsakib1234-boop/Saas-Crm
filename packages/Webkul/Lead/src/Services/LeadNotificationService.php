@@ -4,6 +4,7 @@ namespace Webkul\Lead\Services;
 
 use Illuminate\Support\Facades\Log;
 use Webkul\Lead\Models\Lead;
+use Webkul\Notification\Models\Notification;
 
 /**
  * Lead Notification Service
@@ -18,12 +19,7 @@ class LeadNotificationService
     /**
      * Send a notification to a user about a lead.
      *
-     * @param  int  $userId
-     * @param  string  $title
-     * @param  string  $body
      * @param  string  $priority  'low'|'medium'|'high'
-     * @param  Lead|null  $lead
-     * @return bool
      */
     public function send(int $userId, string $title, string $body, string $priority = 'medium', ?Lead $lead = null): bool
     {
@@ -39,39 +35,38 @@ class LeadNotificationService
 
         try {
             $this->createNotification([
-                'user_id'   => $userId,
-                'title'     => $title,
-                'body'      => $body,
-                'priority'  => $priority,
-                'lead_id'   => $lead?->id,
-                'type'      => 'lead_temperature_alert',
+                'user_id' => $userId,
+                'title' => $title,
+                'body' => $body,
+                'priority' => $priority,
+                'lead_id' => $lead?->id,
+                'type' => 'lead_temperature_alert',
             ]);
 
             Log::info("Lead notification sent to user {$userId}: {$title}");
+
             return true;
         } catch (\Exception $e) {
-            Log::error("Failed to send lead notification: " . $e->getMessage());
+            Log::error('Failed to send lead notification: '.$e->getMessage());
+
             return false;
         }
     }
 
     /**
      * Create a notification record.
-     *
-     * @param  array  $data
-     * @return mixed
      */
     protected function createNotification(array $data): mixed
     {
         // Check if Krayin has a notification system we can use
         if (class_exists('\Webkul\Notification\Models\Notification')) {
-            return \Webkul\Notification\Models\Notification::create([
-                'type'      => $data['type'] ?? 'general',
-                'title'     => $data['title'] ?? 'Notification',
-                'body'      => $data['body'] ?? '',
-                'user_id'   => $data['user_id'] ?? null,
-                'lead_id'   => $data['lead_id'] ?? null,
-                'read_at'   => null,
+            return Notification::create([
+                'type' => $data['type'] ?? 'general',
+                'title' => $data['title'] ?? 'Notification',
+                'body' => $data['body'] ?? '',
+                'user_id' => $data['user_id'] ?? null,
+                'lead_id' => $data['lead_id'] ?? null,
+                'read_at' => null,
             ]);
         }
 
@@ -83,9 +78,6 @@ class LeadNotificationService
 
     /**
      * Send hot lead notification to agent.
-     *
-     * @param  Lead  $lead
-     * @return bool
      */
     public function sendHotLeadAlert(Lead $lead): bool
     {
@@ -104,11 +96,6 @@ class LeadNotificationService
 
     /**
      * Send lead temperature change notification.
-     *
-     * @param  Lead  $lead
-     * @param  string  $fromTemp
-     * @param  string  $toTemp
-     * @return bool
      */
     public function sendTemperatureChangeAlert(Lead $lead, string $fromTemp, string $toTemp): bool
     {

@@ -3,6 +3,10 @@
 namespace Webkul\Lead\Services;
 
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Webkul\Activity\Models\Activity;
+use Webkul\Email\Models\Email;
 use Webkul\Lead\Models\Lead;
 use Webkul\Tag\Models\Tag;
 
@@ -25,38 +29,31 @@ use Webkul\Tag\Models\Tag;
 class LeadActionExecutor
 {
     public function __construct(
-        protected LeadNotificationService $notificationService = new LeadNotificationService()
+        protected LeadNotificationService $notificationService = new LeadNotificationService
     ) {}
 
     /**
      * Execute a single action for a lead.
-     *
-     * @param  string  $actionType
-     * @param  array  $params
-     * @param  Lead  $lead
-     * @return mixed
      */
     public function execute(string $actionType, array $params, Lead $lead): mixed
     {
         return match ($actionType) {
-            'add_tag'          => $this->addTag($params, $lead),
-            'remove_tag'       => $this->removeTag($params, $lead),
-            'update_field'     => $this->updateField($params, $lead),
-            'notify_agent'     => $this->notifyAgent($params, $lead),
-            'create_task'      => $this->createTask($params, $lead),
-            'schedule_activity'=> $this->scheduleActivity($params, $lead),
-            'send_email'       => $this->sendEmail($params, $lead),
-            'webhook'          => $this->triggerWebhook($params, $lead),
-            default            => null,
+            'add_tag' => $this->addTag($params, $lead),
+            'remove_tag' => $this->removeTag($params, $lead),
+            'update_field' => $this->updateField($params, $lead),
+            'notify_agent' => $this->notifyAgent($params, $lead),
+            'create_task' => $this->createTask($params, $lead),
+            'schedule_activity' => $this->scheduleActivity($params, $lead),
+            'send_email' => $this->sendEmail($params, $lead),
+            'webhook' => $this->triggerWebhook($params, $lead),
+            default => null,
         };
     }
 
     /**
      * Execute multiple actions from a threshold.
      *
-     * @param  array  $actions
-     * @param  Lead  $lead
-     * @return array  Results for each action
+     * @return array Results for each action
      */
     public function executeAll(array $actions, Lead $lead): array
     {
@@ -110,6 +107,7 @@ class LeadActionExecutor
         $tag = Tag::where('name', $tagName)->first();
         if ($tag) {
             $lead->tags()->detach($tag->id);
+
             return true;
         }
 
@@ -131,6 +129,7 @@ class LeadActionExecutor
         }
 
         $lead->update([$field => $value]);
+
         return true;
     }
 
@@ -175,16 +174,16 @@ class LeadActionExecutor
         if (class_exists('\Webkul\Activity\Models\Activity')) {
             $dueDate = Carbon::now()->addDays($dueDays)->toDateString();
 
-            return \Webkul\Activity\Models\Activity::create([
-                'title'               => $title,
-                'description'         => $description,
-                'type'                => 'task',
-                'status'              => 'pending',
-                'user_id'             => $lead->user_id,
-                'lead_id'             => $lead->id,
-                'schedule_from'       => Carbon::now()->toDateString(),
-                'schedule_to'         => $dueDate,
-                'priority'            => $priority,
+            return Activity::create([
+                'title' => $title,
+                'description' => $description,
+                'type' => 'task',
+                'status' => 'pending',
+                'user_id' => $lead->user_id,
+                'lead_id' => $lead->id,
+                'schedule_from' => Carbon::now()->toDateString(),
+                'schedule_to' => $dueDate,
+                'priority' => $priority,
             ]);
         }
 
@@ -209,15 +208,15 @@ class LeadActionExecutor
 
         $scheduledAt = Carbon::now()->addDays($daysAhead);
 
-        return \Webkul\Activity\Models\Activity::create([
-            'title'               => $title,
-            'description'         => $description,
-            'type'                => $type,
-            'status'              => 'pending',
-            'user_id'             => $lead->user_id,
-            'lead_id'             => $lead->id,
-            'schedule_from'       => $scheduledAt->toDateString(),
-            'schedule_to'         => $scheduledAt->addHours(1)->toDateString(),
+        return Activity::create([
+            'title' => $title,
+            'description' => $description,
+            'type' => $type,
+            'status' => 'pending',
+            'user_id' => $lead->user_id,
+            'lead_id' => $lead->id,
+            'schedule_from' => $scheduledAt->toDateString(),
+            'schedule_to' => $scheduledAt->addHours(1)->toDateString(),
         ]);
     }
 
@@ -239,13 +238,13 @@ class LeadActionExecutor
         // Replace placeholders
         $body = $this->replacePlaceholders($body, $lead);
 
-        \Webkul\Email\Models\Email::create([
-            'subject'     => $subject,
-            'body'        => $body,
-            'to'          => $lead->person->emails->first()?->value,
-            'lead_id'     => $lead->id,
-            'person_id'   => $lead->person_id,
-            'user_id'     => $lead->user_id,
+        Email::create([
+            'subject' => $subject,
+            'body' => $body,
+            'to' => $lead->person->emails->first()?->value,
+            'lead_id' => $lead->id,
+            'person_id' => $lead->person_id,
+            'user_id' => $lead->user_id,
         ]);
 
         return true;
@@ -257,9 +256,9 @@ class LeadActionExecutor
     protected function replacePlaceholders(string $text, Lead $lead): string
     {
         $replacements = [
-            '{{lead_title}}'   => $lead->title ?? '',
-            '{{person_name}}'  => $lead->person?->name ?? '',
-            '{{agent_name}}'   => $lead->user?->name ?? '',
+            '{{lead_title}}' => $lead->title ?? '',
+            '{{person_name}}' => $lead->person?->name ?? '',
+            '{{agent_name}}' => $lead->user?->name ?? '',
             '{{company_name}}' => $lead->person?->organization?->name ?? '',
         ];
 
@@ -294,12 +293,13 @@ class LeadActionExecutor
         ];
 
         try {
-            \Illuminate\Support\Facades\Http::withHeaders($headers)
+            Http::withHeaders($headers)
                 ->{strtolower($method)}($url, $payload);
 
             return true;
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Lead webhook failed: ' . $e->getMessage());
+            Log::error('Lead webhook failed: '.$e->getMessage());
+
             return false;
         }
     }

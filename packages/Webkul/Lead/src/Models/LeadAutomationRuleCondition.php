@@ -28,9 +28,6 @@ class LeadAutomationRuleCondition extends Model implements LeadAutomationRuleCon
 
     /**
      * Evaluate this condition against a lead.
-     *
-     * @param  Lead  $lead
-     * @return bool
      */
     public function evaluate(Lead $lead): bool
     {
@@ -55,7 +52,6 @@ class LeadAutomationRuleCondition extends Model implements LeadAutomationRuleCon
     /**
      * Get the value of the specified field from the lead.
      *
-     * @param  Lead  $lead
      * @return mixed
      */
     protected function getFieldValue(Lead $lead)
@@ -63,6 +59,7 @@ class LeadAutomationRuleCondition extends Model implements LeadAutomationRuleCon
         // Handle nested attribute values (custom fields)
         if (str_starts_with($this->field, 'attr.')) {
             $attributeCode = substr($this->field, 5);
+
             return $lead->getAttributeValue($attributeCode);
         }
 

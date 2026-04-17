@@ -40,7 +40,7 @@ return [
         ['field' => 'description', 'operator' => 'contains', 'value' => 'thinking',      'points' => 3],
 
         // === COLD signals (-) ===
-        ['field' => 'description', 'operator' => 'contains', 'value' => 'not interested','points' => -10],
+        ['field' => 'description', 'operator' => 'contains', 'value' => 'not interested', 'points' => -10],
         ['field' => 'description', 'operator' => 'contains', 'value' => 'wrong number',  'points' => -10],
         ['field' => 'description', 'operator' => 'contains', 'value' => 'dont call',     'points' => -10],
         ['field' => 'description', 'operator' => 'contains', 'value' => 'spam',          'points' => -8],
@@ -69,7 +69,7 @@ return [
     'thresholds' => [
         [
             'min_score' => 15,
-            'actions'   => [
+            'actions' => [
                 ['action' => 'add_tag',   'params' => ['tag' => 'hot']],
                 ['action' => 'notify_user', 'params' => [
                     'title' => '🔥 Hot Lead Alert',
@@ -84,7 +84,7 @@ return [
         ],
         [
             'min_score' => 5,
-            'actions'   => [
+            'actions' => [
                 ['action' => 'add_tag', 'params' => ['tag' => 'warm']],
                 ['action' => 'create_task', 'params' => [
                     'title' => 'Schedule follow-up: {lead_title}',
@@ -94,7 +94,7 @@ return [
         ],
         [
             'min_score' => -9999, // default = cold
-            'actions'   => [
+            'actions' => [
                 ['action' => 'add_tag',   'params' => ['tag' => 'cold']],
                 ['action' => 'move_to_stage', 'params' => ['stage_code' => 'cold']],
             ],

@@ -2,7 +2,6 @@
 
 namespace Webkul\Lead\Database\Migrations;
 
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Migrations\Migration;
 use Webkul\Tag\Models\Tag;
 use Webkul\User\Models\UserProxy;

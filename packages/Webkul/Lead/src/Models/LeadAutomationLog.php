@@ -75,7 +75,7 @@ class LeadAutomationLog extends Model implements LeadAutomationLogContract
     public function addAction(string $action, array $params, $result = null, ?string $error = null): void
     {
         $actions = $this->actions_executed ?? [];
-        
+
         $actions[] = [
             'action' => $action,
             'params' => $params,
@@ -83,7 +83,7 @@ class LeadAutomationLog extends Model implements LeadAutomationLogContract
             'error' => $error,
             'executed_at' => now()->toIso8601String(),
         ];
-        
+
         $this->update(['actions_executed' => $actions]);
     }
 }

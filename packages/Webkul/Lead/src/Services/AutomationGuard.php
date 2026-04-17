@@ -2,8 +2,6 @@
 
 namespace Webkul\Lead\Services;
 
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Cache;
 use Webkul\Lead\Models\Lead;
 use Webkul\Lead\Models\LeadAutomationExecutionState;
 
@@ -18,8 +16,11 @@ use Webkul\Lead\Models\LeadAutomationExecutionState;
 class AutomationGuard
 {
     protected const DEDUP_TTL = 60;
+
     protected const LOOP_TTL = 300;
+
     protected const FLOOD_THRESHOLD = 5;
+
     protected const FLOOD_WINDOW = 300;
 
     /**
@@ -77,7 +78,7 @@ class AutomationGuard
 
     protected function getLoopKey(array $actionHash): string
     {
-        return 'action:' . md5(json_encode($actionHash));
+        return 'action:'.md5(json_encode($actionHash));
     }
 
     protected function getOrCreateState(int $leadId): LeadAutomationExecutionState

@@ -3,6 +3,7 @@
 namespace Webkul\Lead\Services\Actions;
 
 use Carbon\Carbon;
+use Webkul\Activity\Models\Activity;
 use Webkul\Lead\Models\Lead;
 use Webkul\Lead\Services\LeadActionInterface;
 
@@ -31,7 +32,7 @@ class CreateTaskAction implements LeadActionInterface
         $dueDate = Carbon::now()->addHours($dueOffset);
 
         // Create the task via activity system
-        $task = \Webkul\Activity\Models\Activity::create([
+        $task = Activity::create([
             'title' => $title,
             'description' => $description,
             'type' => 'task',

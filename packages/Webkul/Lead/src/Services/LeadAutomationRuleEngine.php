@@ -20,9 +20,8 @@ class LeadAutomationRuleEngine
     /**
      * Evaluate and execute all matching rules for a lead.
      *
-     * @param  Lead  $lead
      * @param  string  $event  'created' | 'updated'
-     * @return Collection<LeadAutomationRule>  Rules that matched
+     * @return Collection<LeadAutomationRule> Rules that matched
      */
     public function evaluate(Lead $lead, string $event): Collection
     {

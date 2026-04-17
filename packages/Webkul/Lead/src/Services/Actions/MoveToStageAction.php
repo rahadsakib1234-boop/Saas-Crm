@@ -3,6 +3,7 @@
 namespace Webkul\Lead\Services\Actions;
 
 use Webkul\Lead\Models\Lead;
+use Webkul\Lead\Models\Stage;
 use Webkul\Lead\Services\LeadActionInterface;
 
 /**
@@ -26,7 +27,7 @@ class MoveToStageAction implements LeadActionInterface
         }
 
         if ($stageCode) {
-            $stage = \Webkul\Lead\Models\Stage::where('code', $stageCode)->first();
+            $stage = Stage::where('code', $stageCode)->first();
             if (! $stage) {
                 throw new \InvalidArgumentException("Stage not found: {$stageCode}");
             }

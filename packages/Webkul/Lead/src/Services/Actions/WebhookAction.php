@@ -26,7 +26,7 @@ class WebhookAction implements LeadActionInterface
         }
 
         if (! filter_var($url, FILTER_VALIDATE_URL)) {
-            throw new \InvalidArgumentException('Invalid webhook URL: ' . $url);
+            throw new \InvalidArgumentException('Invalid webhook URL: '.$url);
         }
 
         $data = is_array($payload)

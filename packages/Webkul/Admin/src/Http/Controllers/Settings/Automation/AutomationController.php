@@ -13,8 +13,7 @@ class AutomationController extends Controller
 {
     public function __construct(
         protected LeadAutomationRuleRepository $ruleRepository
-    ) {
-    }
+    ) {}
 
     public function index()
     {

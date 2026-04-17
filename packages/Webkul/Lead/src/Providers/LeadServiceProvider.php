@@ -2,14 +2,14 @@
 
 namespace Webkul\Lead\Providers;
 
-use Illuminate\Support\ServiceProvider;
 use Illuminate\Routing\Router;
+use Illuminate\Support\ServiceProvider;
 use Webkul\Lead\Models\Lead;
 use Webkul\Lead\Observers\LeadObserver;
 use Webkul\Lead\Services\AutomationGuard;
+use Webkul\Lead\Services\LeadActionExecutor;
 use Webkul\Lead\Services\LeadActionRegistry;
 use Webkul\Lead\Services\LeadAutomationRuleEngine;
-use Webkul\Lead\Services\LeadActionExecutor;
 
 /**
  * Lead Service Provider
@@ -43,7 +43,7 @@ class LeadServiceProvider extends ServiceProvider
     {
         // Register AutomationGuard as singleton (persists across requests)
         $this->app->singleton(AutomationGuard::class, function () {
-            return new AutomationGuard();
+            return new AutomationGuard;
         });
 
         // Register LeadActionExecutor

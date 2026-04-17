@@ -2,6 +2,13 @@
 
 namespace Webkul\Lead\Services;
 
+use Webkul\Lead\Services\Actions\AddTagAction;
+use Webkul\Lead\Services\Actions\CreateTaskAction;
+use Webkul\Lead\Services\Actions\MoveToStageAction;
+use Webkul\Lead\Services\Actions\NotifyUserAction;
+use Webkul\Lead\Services\Actions\RemoveTagAction;
+use Webkul\Lead\Services\Actions\WebhookAction;
+
 /**
  * Lead Action Registry
  *
@@ -35,12 +42,12 @@ class LeadActionRegistry
      * @var array<string, class-string<LeadActionInterface>>
      */
     protected static array $defaultActions = [
-        'add_tag' => \Webkul\Lead\Services\Actions\AddTagAction::class,
-        'remove_tag' => \Webkul\Lead\Services\Actions\RemoveTagAction::class,
-        'notify_user' => \Webkul\Lead\Services\Actions\NotifyUserAction::class,
-        'create_task' => \Webkul\Lead\Services\Actions\CreateTaskAction::class,
-        'move_to_stage' => \Webkul\Lead\Services\Actions\MoveToStageAction::class,
-        'webhook' => \Webkul\Lead\Services\Actions\WebhookAction::class,
+        'add_tag' => AddTagAction::class,
+        'remove_tag' => RemoveTagAction::class,
+        'notify_user' => NotifyUserAction::class,
+        'create_task' => CreateTaskAction::class,
+        'move_to_stage' => MoveToStageAction::class,
+        'webhook' => WebhookAction::class,
     ];
 
     /**
@@ -56,14 +63,13 @@ class LeadActionRegistry
     /**
      * Register an action.
      *
-     * @param  string  $name
      * @param  class-string<LeadActionInterface>  $class
      */
     public static function register(string $name, string $class): void
     {
         if (! is_subclass_of($class, LeadActionInterface::class)) {
             throw new \InvalidArgumentException(
-                "Action class {$class} must implement " . LeadActionInterface::class
+                "Action class {$class} must implement ".LeadActionInterface::class
             );
         }
 
@@ -107,10 +113,8 @@ class LeadActionRegistry
     /**
      * Execute an action by name.
      *
-     * @param  string  $name
-     * @param  array  $params
      * @param  mixed  $context  Usually Lead model
-     * @return array  ['success' => bool, 'result' => mixed, 'error' => string|null]
+     * @return array ['success' => bool, 'result' => mixed, 'error' => string|null]
      */
     public static function execute(string $name, array $params, $context): array
     {
@@ -123,7 +127,7 @@ class LeadActionRegistry
         }
 
         $class = self::$actions[$name];
-        $action = new $class();
+        $action = new $class;
 
         try {
             $result = $action->execute($params, $context);

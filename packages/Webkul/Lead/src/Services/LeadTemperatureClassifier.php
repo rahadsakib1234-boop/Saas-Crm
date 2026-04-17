@@ -24,6 +24,7 @@ use Webkul\Tag\Models\Tag;
 class LeadTemperatureClassifier
 {
     protected const TRIGGER_TYPE = 'temperature_scoring';
+
     protected const TRIGGER_NAME = 'LeadTemperatureScoring';
 
     public function __construct(
@@ -34,19 +35,19 @@ class LeadTemperatureClassifier
     /**
      * Classify a lead's temperature and execute all threshold actions.
      *
-     * @param  Lead  $lead
-     * @return array  Results of all executed actions
+     * @return array Results of all executed actions
      */
     public function classify(Lead $lead): array
     {
         // Step 1: Guard check - prevent duplicate/loop/flood
         $guardFailures = $this->guard->check($lead, 'temperature_scoring');
-        
+
         // Step 2: Create execution log
         $log = $this->createLog($lead, $guardFailures);
 
         if (! empty($guardFailures)) {
-            $log->markPartial('Guard blocked: ' . json_encode($guardFailures));
+            $log->markPartial('Guard blocked: '.json_encode($guardFailures));
+
             return ['blocked' => true, 'reasons' => $guardFailures];
         }
 
@@ -60,6 +61,7 @@ class LeadTemperatureClassifier
         if (! $threshold) {
             $log->markSuccess();
             $log->update(['context' => array_merge($log->context ?? [], ['score' => $score, 'threshold' => null])]);
+
             return ['blocked' => false, 'score' => $score, 'threshold' => null, 'actions' => []];
         }
 
@@ -93,9 +95,6 @@ class LeadTemperatureClassifier
 
     /**
      * Calculate total score for a lead.
-     *
-     * @param  Lead  $lead
-     * @return int
      */
     public function calculateScore(Lead $lead): int
     {
@@ -115,7 +114,6 @@ class LeadTemperatureClassifier
     /**
      * Get list of matched condition descriptions.
      *
-     * @param  Lead  $lead
      * @return array<string>
      */
     public function getMatchedConditions(Lead $lead): array
@@ -140,9 +138,6 @@ class LeadTemperatureClassifier
 
     /**
      * Determine which threshold matches the score.
-     *
-     * @param  int  $score
-     * @return array|null
      */
     public function determineThreshold(int $score): ?array
     {
@@ -161,9 +156,6 @@ class LeadTemperatureClassifier
 
     /**
      * Get the tag model for a temperature level.
-     *
-     * @param  string  $temperature
-     * @return Tag|null
      */
     public function getTemperatureTag(string $temperature): ?Tag
     {
@@ -172,9 +164,6 @@ class LeadTemperatureClassifier
 
     /**
      * Build concatenated lowercase text from configured fields.
-     *
-     * @param  Lead  $lead
-     * @return string
      */
     protected function buildSearchText(Lead $lead): string
     {
@@ -192,10 +181,6 @@ class LeadTemperatureClassifier
 
     /**
      * Check if a condition matches the search text.
-     *
-     * @param  string  $text
-     * @param  array   $condition
-     * @return bool
      */
     protected function conditionMatches(string $text, array $condition): bool
     {
@@ -203,26 +188,22 @@ class LeadTemperatureClassifier
         $value = mb_strtolower((string) ($condition['value'] ?? ''));
 
         return match ($operator) {
-            'contains'      => mb_strpos($text, $value) !== false,
-            'not_contains'  => mb_strpos($text, $value) === false,
-            'equals'        => $text === $value,
-            'not_equals'    => $text !== $value,
-            'starts_with'   => mb_strpos($text, $value) === 0,
-            'ends_with'     => mb_strlen($text) >= mb_strlen($value) && mb_substr($text, -mb_strlen($value)) === $value,
-            'is_empty'      => mb_trim($text) === '',
-            'is_not_empty'  => mb_trim($text) !== '',
-            'greater_than'  => is_numeric($text) && is_numeric($value) && (float) $text > (float) $value,
-            'less_than'     => is_numeric($text) && is_numeric($value) && (float) $text < (float) $value,
-            default         => false,
+            'contains' => mb_strpos($text, $value) !== false,
+            'not_contains' => mb_strpos($text, $value) === false,
+            'equals' => $text === $value,
+            'not_equals' => $text !== $value,
+            'starts_with' => mb_strpos($text, $value) === 0,
+            'ends_with' => mb_strlen($text) >= mb_strlen($value) && mb_substr($text, -mb_strlen($value)) === $value,
+            'is_empty' => mb_trim($text) === '',
+            'is_not_empty' => mb_trim($text) !== '',
+            'greater_than' => is_numeric($text) && is_numeric($value) && (float) $text > (float) $value,
+            'less_than' => is_numeric($text) && is_numeric($value) && (float) $text < (float) $value,
+            default => false,
         };
     }
 
     /**
      * Create an automation log entry.
-     *
-     * @param  Lead  $lead
-     * @param  array $guardFailures
-     * @return LeadAutomationLog
      */
     protected function createLog(Lead $lead, array $guardFailures = []): LeadAutomationLog
     {

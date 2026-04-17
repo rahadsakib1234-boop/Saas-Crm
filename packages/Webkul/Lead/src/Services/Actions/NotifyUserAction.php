@@ -2,7 +2,6 @@
 
 namespace Webkul\Lead\Services\Actions;
 
-use Carbon\Carbon;
 use Webkul\Lead\Models\Lead;
 use Webkul\Lead\Services\LeadActionInterface;
 use Webkul\Lead\Services\LeadNotificationService;
@@ -27,7 +26,7 @@ class NotifyUserAction implements LeadActionInterface
         // Allow template placeholders
         $body = $this->interpolate($body, $context);
 
-        $notificationService = new LeadNotificationService();
+        $notificationService = new LeadNotificationService;
         $notificationService->notify($context, $title, $body, $priority);
 
         return [

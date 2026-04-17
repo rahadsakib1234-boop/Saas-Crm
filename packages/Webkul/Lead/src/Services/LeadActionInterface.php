@@ -17,7 +17,7 @@ interface LeadActionInterface
      *
      * @param  array  $params  Action parameters from config/rule
      * @param  mixed  $context  The triggering entity (usually Lead)
-     * @return mixed  Result of execution (varies by action)
+     * @return mixed Result of execution (varies by action)
      */
     public function execute(array $params, $context): mixed;
 
@@ -28,9 +28,6 @@ interface LeadActionInterface
 
     /**
      * Validate action parameters.
-     *
-     * @param  array  $params
-     * @return bool
      */
     public function validate(array $params): bool;
 

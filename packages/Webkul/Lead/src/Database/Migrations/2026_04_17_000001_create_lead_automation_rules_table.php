@@ -1,7 +1,7 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -17,16 +17,16 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
             $table->integer('priority')->default(0); // lower = higher priority
             $table->string('entity_type')->default('leads');
-            
+
             // Trigger configuration (JSON): {"event": "created|updated", "conditions": [...], "condition_logic": "and|or"}
             $table->json('trigger_config')->nullable();
-            
+
             // Action configuration (JSON): [{"action": "add_tag", "params": {"tag": "hot"}}]
             $table->json('actions');
-            
+
             // Rule matching logic
             $table->string('condition_logic')->default('and'); // and/or
-            
+
             $table->timestamps();
         });
 

@@ -3,8 +3,9 @@
 namespace Webkul\Lead\Observers;
 
 use Webkul\Lead\Models\Lead;
-use Webkul\Lead\Services\LeadTemperatureClassifier;
 use Webkul\Lead\Services\LeadAutomationRuleEngine;
+use Webkul\Lead\Services\LeadTemperatureClassifier;
+use Webkul\Tag\Models\Tag;
 
 /**
  * Lead Observer
@@ -93,6 +94,6 @@ class LeadObserver
      */
     protected function getTemperatureTagIds(): array
     {
-        return \Webkul\Tag\Models\Tag::whereIn('name', self::TEMPERATURE_TAGS)->pluck('id')->toArray();
+        return Tag::whereIn('name', self::TEMPERATURE_TAGS)->pluck('id')->toArray();
     }
 }
