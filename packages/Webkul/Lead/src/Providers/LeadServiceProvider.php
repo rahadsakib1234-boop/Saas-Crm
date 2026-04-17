@@ -10,6 +10,8 @@ use Webkul\Lead\Services\AutomationGuard;
 use Webkul\Lead\Services\LeadActionExecutor;
 use Webkul\Lead\Services\LeadActionRegistry;
 use Webkul\Lead\Services\LeadAutomationRuleEngine;
+use Webkul\Lead\Services\LeadNotificationService;
+use Webkul\Lead\Services\LeadTemperatureClassifier;
 
 /**
  * Lead Service Provider
@@ -17,7 +19,7 @@ use Webkul\Lead\Services\LeadAutomationRuleEngine;
  * Bootstraps the Leads module including:
  *   - Observer registration
  *   - Action registry initialization
- *   - Service bindings
+ *   - Service container bindings
  */
 class LeadServiceProvider extends ServiceProvider
 {
@@ -26,13 +28,10 @@ class LeadServiceProvider extends ServiceProvider
      */
     public function boot(Router $router): void
     {
-        // Load migrations
-        $this->loadMigrationsFrom(__DIR__.'/../Database/Migrations');
+        $this->loadMigrationsFrom(__DIR__ . '/../Database/Migrations');
 
-        // Boot the action registry with default actions
         LeadActionRegistry::boot();
 
-        // Register the Lead observer
         Lead::observe(LeadObserver::class);
     }
 
@@ -41,23 +40,34 @@ class LeadServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // Register AutomationGuard as singleton (persists across requests)
+        // AutomationGuard — singleton so state is consistent within a request
         $this->app->singleton(AutomationGuard::class, function () {
-            return new AutomationGuard;
+            return new AutomationGuard();
         });
 
-        // Register LeadActionExecutor
+        // LeadNotificationService
+        $this->app->singleton(LeadNotificationService::class, function () {
+            return new LeadNotificationService();
+        });
+
+        // FIX: LeadActionExecutor needs LeadNotificationService, NOT AutomationGuard
         $this->app->singleton(LeadActionExecutor::class, function ($app) {
             return new LeadActionExecutor(
-                $app->make(AutomationGuard::class)
+                $app->make(LeadNotificationService::class)
             );
         });
 
-        // Register LeadAutomationRuleEngine
-        $this->app->singleton(LeadAutomationRuleEngine::class, function ($app) {
-            return new LeadAutomationRuleEngine(
-                $app->make(AutomationGuard::class)
+        // FIX: Register LeadTemperatureClassifier (was missing entirely)
+        $this->app->singleton(LeadTemperatureClassifier::class, function ($app) {
+            return new LeadTemperatureClassifier(
+                $app->make(AutomationGuard::class),
+                $app->make(LeadActionExecutor::class)
             );
+        });
+
+        // LeadAutomationRuleEngine — does not need AutomationGuard in its constructor
+        $this->app->singleton(LeadAutomationRuleEngine::class, function ($app) {
+            return new LeadAutomationRuleEngine();
         });
     }
 }
