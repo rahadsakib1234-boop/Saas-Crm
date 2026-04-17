@@ -1,0 +1,56 @@
+# Environment
+.env
+.env.backup
+.env.production
+.phpunit.result.cache
+
+# Dependencies
+/node_modules
+/vendor
+/packages/*/node_modules
+
+# Build outputs
+/public/build
+/public/dist
+/public/hot
+/public/storage
+/storage/*.key
+
+# Laravel
+/bootstrap/cache/*
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/storage/logs/*
+/storage/app/public
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test outputs
+/test-results
+/playwright-report
+/packages/Webkul/Admin/tests/e2e-pw/.state
+/packages/Webkul/Admin/tests/e2e-pw/test-results
+/packages/Webkul/Admin/tests/e2e-pw/playwright-report
+
+# Temporary files
+*.log
+*.cache
+npm-debug.log
+yarn-error.log
+
+# Database
+*.sqlite
+*.sqlite3
+
+# Installed marker (remove for fresh install)
+/storage/installed
