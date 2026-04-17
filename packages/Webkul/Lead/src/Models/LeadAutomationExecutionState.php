@@ -35,13 +35,13 @@ class LeadAutomationExecutionState extends Model implements LeadAutomationExecut
     ];
 
     protected $casts = [
-        'hit_count'             => 'integer',
-        'execution_count'       => 'integer',
+        'hit_count' => 'integer',
+        'execution_count' => 'integer',
         'execution_fingerprint' => 'array',
-        'guard_results'         => 'array',
-        'first_executed_at'     => 'datetime',
-        'last_executed_at'      => 'datetime',
-        'expires_at'            => 'datetime',
+        'guard_results' => 'array',
+        'first_executed_at' => 'datetime',
+        'last_executed_at' => 'datetime',
+        'expires_at' => 'datetime',
     ];
 
     // =====================================================================
@@ -64,9 +64,6 @@ class LeadAutomationExecutionState extends Model implements LeadAutomationExecut
 
     /**
      * Check if this lead+event key was recently executed (deduplication).
-     *
-     * @param  string  $dedupKey
-     * @return bool
      */
     public function isDuplicateRecently(string $dedupKey): bool
     {
@@ -77,17 +74,13 @@ class LeadAutomationExecutionState extends Model implements LeadAutomationExecut
         }
 
         $executedAt = $fingerprints[$dedupKey]['executed_at'] ?? 0;
-        $ttl        = $fingerprints[$dedupKey]['ttl'] ?? 60;
+        $ttl = $fingerprints[$dedupKey]['ttl'] ?? 60;
 
         return (time() - $executedAt) < $ttl;
     }
 
     /**
      * Check if a loop is detected for a given action hash.
-     *
-     * @param  string  $loopKey
-     * @param  int     $ttlMinutes
-     * @return bool
      */
     public function hasLoopDetected(string $loopKey, int $ttlMinutes = 5): bool
     {
@@ -106,14 +99,13 @@ class LeadAutomationExecutionState extends Model implements LeadAutomationExecut
     /**
      * Check if execution count exceeds flood threshold within time window.
      *
-     * @param  int  $threshold   Max allowed executions
+     * @param  int  $threshold  Max allowed executions
      * @param  int  $windowSecs  Time window in seconds
-     * @return bool
      */
     public function exceedsFloodThreshold(int $threshold, int $windowSecs): bool
     {
-        $count     = $this->execution_count ?? 0;
-        $lastAt    = $this->last_executed_at;
+        $count = $this->execution_count ?? 0;
+        $lastAt = $this->last_executed_at;
 
         if (! $lastAt) {
             return false;
@@ -131,10 +123,6 @@ class LeadAutomationExecutionState extends Model implements LeadAutomationExecut
 
     /**
      * Record a deduplication fingerprint.
-     *
-     * @param  string  $dedupKey
-     * @param  int     $ttlSeconds
-     * @return void
      */
     public function recordDeduplication(string $dedupKey, int $ttlSeconds = 60): void
     {
@@ -142,7 +130,7 @@ class LeadAutomationExecutionState extends Model implements LeadAutomationExecut
 
         $fingerprints[$dedupKey] = [
             'executed_at' => time(),
-            'ttl'         => $ttlSeconds,
+            'ttl' => $ttlSeconds,
         ];
 
         $this->update(['execution_fingerprint' => $fingerprints]);
@@ -150,9 +138,6 @@ class LeadAutomationExecutionState extends Model implements LeadAutomationExecut
 
     /**
      * Record a loop-detection fingerprint.
-     *
-     * @param  string  $loopKey
-     * @return void
      */
     public function recordLoop(string $loopKey): void
     {
@@ -167,8 +152,6 @@ class LeadAutomationExecutionState extends Model implements LeadAutomationExecut
 
     /**
      * Increment the flood counter and update last executed timestamp.
-     *
-     * @return void
      */
     public function recordFlood(): void
     {
@@ -187,10 +170,10 @@ class LeadAutomationExecutionState extends Model implements LeadAutomationExecut
         ?string $actionHash = null
     ): string {
         $parts = [
-            'lead_id'      => $leadId,
+            'lead_id' => $leadId,
             'trigger_type' => $triggerType,
-            'event'        => $event,
-            'action_hash'  => $actionHash ?? 'global',
+            'event' => $event,
+            'action_hash' => $actionHash ?? 'global',
         ];
 
         return md5(json_encode($parts));

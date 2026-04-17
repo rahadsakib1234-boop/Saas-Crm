@@ -25,6 +25,7 @@ use Webkul\Tag\Models\Tag;
 class LeadTemperatureClassifier
 {
     protected const TRIGGER_TYPE = 'temperature_scoring';
+
     protected const TRIGGER_NAME = 'LeadTemperatureScoring';
 
     public function __construct(
@@ -35,8 +36,7 @@ class LeadTemperatureClassifier
     /**
      * Classify a lead's temperature and execute all threshold actions.
      *
-     * @param  Lead  $lead
-     * @return array  Results of all executed actions
+     * @return array Results of all executed actions
      */
     public function classify(Lead $lead): array
     {
@@ -47,13 +47,13 @@ class LeadTemperatureClassifier
         $log = $this->createLog($lead, $guardFailures);
 
         if (! empty($guardFailures)) {
-            $log->markPartial('Guard blocked: ' . json_encode($guardFailures));
+            $log->markPartial('Guard blocked: '.json_encode($guardFailures));
 
             return ['blocked' => true, 'reasons' => $guardFailures];
         }
 
         // Step 3: Calculate score
-        $score             = $this->calculateScore($lead);
+        $score = $this->calculateScore($lead);
         $matchedConditions = $this->getMatchedConditions($lead);
 
         // Step 4: Determine threshold
@@ -63,7 +63,7 @@ class LeadTemperatureClassifier
             $log->markSuccess();
             $log->update([
                 'context' => array_merge($log->context ?? [], [
-                    'score'     => $score,
+                    'score' => $score,
                     'threshold' => null,
                 ]),
             ]);
@@ -81,9 +81,9 @@ class LeadTemperatureClassifier
         // Step 7: Update log with results
         $log->update([
             'context' => array_merge($log->context ?? [], [
-                'score'                => $score,
-                'matched_conditions'   => $matchedConditions,
-                'threshold_min_score'  => $threshold['min_score'] ?? null,
+                'score' => $score,
+                'matched_conditions' => $matchedConditions,
+                'threshold_min_score' => $threshold['min_score'] ?? null,
             ]),
             'actions_executed' => $results,
         ]);
@@ -91,11 +91,11 @@ class LeadTemperatureClassifier
         $log->markSuccess();
 
         return [
-            'blocked'            => false,
-            'score'              => $score,
+            'blocked' => false,
+            'score' => $score,
             'matched_conditions' => $matchedConditions,
-            'threshold'          => $threshold['min_score'] ?? null,
-            'actions'            => $results,
+            'threshold' => $threshold['min_score'] ?? null,
+            'actions' => $results,
         ];
     }
 
@@ -104,7 +104,7 @@ class LeadTemperatureClassifier
      */
     public function calculateScore(Lead $lead): int
     {
-        $text       = $this->buildSearchText($lead);
+        $text = $this->buildSearchText($lead);
         $conditions = config('lead_temperature.conditions', []);
         $totalScore = 0;
 
@@ -124,17 +124,17 @@ class LeadTemperatureClassifier
      */
     public function getMatchedConditions(Lead $lead): array
     {
-        $text       = $this->buildSearchText($lead);
+        $text = $this->buildSearchText($lead);
         $conditions = config('lead_temperature.conditions', []);
-        $matched    = [];
+        $matched = [];
 
         foreach ($conditions as $condition) {
             if ($this->conditionMatches($text, $condition)) {
                 $matched[] = [
-                    'field'    => $condition['field'] ?? '',
+                    'field' => $condition['field'] ?? '',
                     'operator' => $condition['operator'] ?? '',
-                    'value'    => $condition['value'] ?? '',
-                    'points'   => $condition['points'] ?? 0,
+                    'value' => $condition['value'] ?? '',
+                    'points' => $condition['points'] ?? 0,
                 ];
             }
         }
@@ -173,7 +173,7 @@ class LeadTemperatureClassifier
      */
     protected function buildSearchText(Lead $lead): string
     {
-        $fields    = config('lead_temperature.analyze_fields', ['description', 'title']);
+        $fields = config('lead_temperature.analyze_fields', ['description', 'title']);
         $textParts = [];
 
         foreach ($fields as $field) {
@@ -191,21 +191,21 @@ class LeadTemperatureClassifier
     protected function conditionMatches(string $text, array $condition): bool
     {
         $operator = $condition['operator'] ?? 'contains';
-        $value    = mb_strtolower((string) ($condition['value'] ?? ''));
+        $value = mb_strtolower((string) ($condition['value'] ?? ''));
 
         return match ($operator) {
-            'contains'     => mb_strpos($text, $value) !== false,
+            'contains' => mb_strpos($text, $value) !== false,
             'not_contains' => mb_strpos($text, $value) === false,
-            'equals'       => $text === $value,
-            'not_equals'   => $text !== $value,
-            'starts_with'  => mb_strpos($text, $value) === 0,
-            'ends_with'    => mb_strlen($text) >= mb_strlen($value)
+            'equals' => $text === $value,
+            'not_equals' => $text !== $value,
+            'starts_with' => mb_strpos($text, $value) === 0,
+            'ends_with' => mb_strlen($text) >= mb_strlen($value)
                                 && mb_substr($text, -mb_strlen($value)) === $value,
-            'is_empty'     => mb_trim($text) === '',
+            'is_empty' => mb_trim($text) === '',
             'is_not_empty' => mb_trim($text) !== '',
             'greater_than' => is_numeric($text) && is_numeric($value) && (float) $text > (float) $value,
-            'less_than'    => is_numeric($text) && is_numeric($value) && (float) $text < (float) $value,
-            default        => false,
+            'less_than' => is_numeric($text) && is_numeric($value) && (float) $text < (float) $value,
+            default => false,
         };
     }
 
@@ -217,17 +217,17 @@ class LeadTemperatureClassifier
         $dirtyFields = array_keys($lead->getDirty());
 
         return LeadAutomationLog::create([
-            'lead_id'          => $lead->id,
-            'user_id'          => $lead->user_id,
-            'trigger_type'     => self::TRIGGER_TYPE,
-            'trigger_name'     => self::TRIGGER_NAME,
-            'event'            => $lead->wasRecentlyCreated ? 'created' : 'updated',
-            'context'          => [
-                'dirty_fields'  => $dirtyFields,
+            'lead_id' => $lead->id,
+            'user_id' => $lead->user_id,
+            'trigger_type' => self::TRIGGER_TYPE,
+            'trigger_name' => self::TRIGGER_NAME,
+            'event' => $lead->wasRecentlyCreated ? 'created' : 'updated',
+            'context' => [
+                'dirty_fields' => $dirtyFields,
                 'guard_failures' => $guardFailures,
             ],
             'actions_executed' => [],
-            'status'           => 'pending',
+            'status' => 'pending',
         ]);
     }
 }

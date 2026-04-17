@@ -3,8 +3,11 @@
 namespace Webkul\Lead\Services;
 
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Webkul\Activity\Models\Activity;
+use Webkul\Email\Models\Email;
 use Webkul\Lead\Models\Lead;
-use Webkul\Lead\Models\LeadAutomationLog;
 use Webkul\Tag\Models\Tag;
 
 /**
@@ -26,7 +29,7 @@ class LeadActionExecutor
 {
     // FIX: constructor now correctly accepts LeadNotificationService (not AutomationGuard)
     public function __construct(
-        protected LeadNotificationService $notificationService = new LeadNotificationService()
+        protected LeadNotificationService $notificationService = new LeadNotificationService
     ) {}
 
     /**
@@ -35,15 +38,15 @@ class LeadActionExecutor
     public function execute(string $actionType, array $params, Lead $lead): mixed
     {
         return match ($actionType) {
-            'add_tag'           => $this->addTag($params, $lead),
-            'remove_tag'        => $this->removeTag($params, $lead),
-            'update_field'      => $this->updateField($params, $lead),
-            'notify_agent'      => $this->notifyAgent($params, $lead),
-            'create_task'       => $this->createTask($params, $lead),
+            'add_tag' => $this->addTag($params, $lead),
+            'remove_tag' => $this->removeTag($params, $lead),
+            'update_field' => $this->updateField($params, $lead),
+            'notify_agent' => $this->notifyAgent($params, $lead),
+            'create_task' => $this->createTask($params, $lead),
             'schedule_activity' => $this->scheduleActivity($params, $lead),
-            'send_email'        => $this->sendEmail($params, $lead),
-            'webhook'           => $this->triggerWebhook($params, $lead),
-            default             => null,
+            'send_email' => $this->sendEmail($params, $lead),
+            'webhook' => $this->triggerWebhook($params, $lead),
+            default => null,
         };
     }
 
@@ -53,9 +56,7 @@ class LeadActionExecutor
      * FIX: removed the unused $log parameter that was causing an arity mismatch.
      * The $log is updated by LeadTemperatureClassifier after this returns.
      *
-     * @param  array  $actions
-     * @param  Lead   $lead
-     * @return array  Results for each action
+     * @return array Results for each action
      */
     public function executeAll(array $actions, Lead $lead): array
     {
@@ -63,24 +64,24 @@ class LeadActionExecutor
 
         foreach ($actions as $action) {
             $actionType = $action['action'] ?? null;
-            $params     = $action['params'] ?? [];
+            $params = $action['params'] ?? [];
 
             if (! $actionType) {
                 continue;
             }
 
             try {
-                $result    = $this->execute($actionType, $params, $lead);
+                $result = $this->execute($actionType, $params, $lead);
                 $results[] = [
                     'action' => $actionType,
                     'result' => $result,
-                    'error'  => null,
+                    'error' => null,
                 ];
             } catch (\Throwable $e) {
                 $results[] = [
                     'action' => $actionType,
                     'result' => null,
-                    'error'  => $e->getMessage(),
+                    'error' => $e->getMessage(),
                 ];
             }
         }
@@ -146,8 +147,8 @@ class LeadActionExecutor
 
     protected function notifyAgent(array $params, Lead $lead): bool
     {
-        $title    = $params['title'] ?? 'Lead Update';
-        $body     = $params['body'] ?? 'A lead requires your attention';
+        $title = $params['title'] ?? 'Lead Update';
+        $body = $params['body'] ?? 'A lead requires your attention';
         $priority = $params['priority'] ?? 'medium';
 
         if (! $lead->user_id) {
@@ -172,25 +173,25 @@ class LeadActionExecutor
 
     protected function createTask(array $params, Lead $lead): ?object
     {
-        $title       = $params['title'] ?? 'Follow up required';
+        $title = $params['title'] ?? 'Follow up required';
         $description = $params['description'] ?? null;
-        $dueDays     = $params['due_days'] ?? 1;
+        $dueDays = $params['due_days'] ?? 1;
 
-        if (! class_exists(\Webkul\Activity\Models\Activity::class)) {
+        if (! class_exists(Activity::class)) {
             return null;
         }
 
         $scheduleFrom = Carbon::now();
-        $scheduleTo   = Carbon::now()->addDays($dueDays);
+        $scheduleTo = Carbon::now()->addDays($dueDays);
 
-        $activity = \Webkul\Activity\Models\Activity::create([
-            'title'         => $title,
-            'comment'       => $description,
-            'type'          => 'task',
-            'is_done'       => 0,
-            'user_id'       => $lead->user_id,
+        $activity = Activity::create([
+            'title' => $title,
+            'comment' => $description,
+            'type' => 'task',
+            'is_done' => 0,
+            'user_id' => $lead->user_id,
             'schedule_from' => $scheduleFrom,
-            'schedule_to'   => $scheduleTo,
+            'schedule_to' => $scheduleTo,
         ]);
 
         // Link to the lead via pivot
@@ -203,26 +204,26 @@ class LeadActionExecutor
 
     protected function scheduleActivity(array $params, Lead $lead): ?object
     {
-        $title     = $params['title'] ?? 'Scheduled Follow-up';
-        $type      = $params['type'] ?? 'call';
+        $title = $params['title'] ?? 'Scheduled Follow-up';
+        $type = $params['type'] ?? 'call';
         $daysAhead = $params['days_ahead'] ?? 1;
-        $comment   = $params['description'] ?? null;
+        $comment = $params['description'] ?? null;
 
-        if (! class_exists(\Webkul\Activity\Models\Activity::class)) {
+        if (! class_exists(Activity::class)) {
             return null;
         }
 
         $scheduleFrom = Carbon::now()->addDays($daysAhead);
-        $scheduleTo   = $scheduleFrom->copy()->addHour();
+        $scheduleTo = $scheduleFrom->copy()->addHour();
 
-        $activity = \Webkul\Activity\Models\Activity::create([
-            'title'         => $title,
-            'comment'       => $comment,
-            'type'          => $type,
-            'is_done'       => 0,
-            'user_id'       => $lead->user_id,
+        $activity = Activity::create([
+            'title' => $title,
+            'comment' => $comment,
+            'type' => $type,
+            'is_done' => 0,
+            'user_id' => $lead->user_id,
             'schedule_from' => $scheduleFrom,
-            'schedule_to'   => $scheduleTo,
+            'schedule_to' => $scheduleTo,
         ]);
 
         if ($activity) {
@@ -238,21 +239,21 @@ class LeadActionExecutor
 
     protected function sendEmail(array $params, Lead $lead): bool
     {
-        if (! class_exists(\Webkul\Email\Models\Email::class) || ! $lead->person) {
+        if (! class_exists(Email::class) || ! $lead->person) {
             return false;
         }
 
         $subject = $params['subject'] ?? "Follow-up: {$lead->title}";
-        $body    = $params['body'] ?? "Dear {$lead->person->name},\n\nWe'd like to follow up regarding {$lead->title}.";
-        $body    = $this->replacePlaceholders($body, $lead);
+        $body = $params['body'] ?? "Dear {$lead->person->name},\n\nWe'd like to follow up regarding {$lead->title}.";
+        $body = $this->replacePlaceholders($body, $lead);
 
-        \Webkul\Email\Models\Email::create([
-            'subject'   => $subject,
-            'body'      => $body,
-            'to'        => $lead->person->emails->first()?->value,
-            'lead_id'   => $lead->id,
+        Email::create([
+            'subject' => $subject,
+            'body' => $body,
+            'to' => $lead->person->emails->first()?->value,
+            'lead_id' => $lead->id,
             'person_id' => $lead->person_id,
-            'user_id'   => $lead->user_id,
+            'user_id' => $lead->user_id,
         ]);
 
         return true;
@@ -261,9 +262,9 @@ class LeadActionExecutor
     protected function replacePlaceholders(string $text, Lead $lead): string
     {
         $replacements = [
-            '{{lead_title}}'   => $lead->title ?? '',
-            '{{person_name}}'  => $lead->person?->name ?? '',
-            '{{agent_name}}'   => $lead->user?->name ?? '',
+            '{{lead_title}}' => $lead->title ?? '',
+            '{{person_name}}' => $lead->person?->name ?? '',
+            '{{agent_name}}' => $lead->user?->name ?? '',
             '{{company_name}}' => $lead->person?->organization?->name ?? '',
         ];
 
@@ -281,24 +282,24 @@ class LeadActionExecutor
             return false;
         }
 
-        $method  = $params['method'] ?? 'POST';
+        $method = $params['method'] ?? 'POST';
         $headers = $params['headers'] ?? ['Content-Type' => 'application/json'];
 
         $payload = [
-            'event'      => 'lead.temperature_changed',
-            'lead_id'    => $lead->id,
+            'event' => 'lead.temperature_changed',
+            'lead_id' => $lead->id,
             'lead_title' => $lead->title,
-            'timestamp'  => now()->toIso8601String(),
-            'data'       => $params['payload'] ?? [],
+            'timestamp' => now()->toIso8601String(),
+            'data' => $params['payload'] ?? [],
         ];
 
         try {
-            \Illuminate\Support\Facades\Http::withHeaders($headers)
+            Http::withHeaders($headers)
                 ->{strtolower($method)}($url, $payload);
 
             return true;
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Lead webhook failed: ' . $e->getMessage());
+            Log::error('Lead webhook failed: '.$e->getMessage());
 
             return false;
         }

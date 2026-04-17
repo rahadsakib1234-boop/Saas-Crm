@@ -19,13 +19,13 @@ class NotifyUserAction implements LeadActionInterface
             throw new \InvalidArgumentException('NotifyUserAction requires Lead context');
         }
 
-        $title    = $params['title'] ?? 'Lead Updated';
-        $body     = $params['body'] ?? 'A lead has been automatically processed.';
+        $title = $params['title'] ?? 'Lead Updated';
+        $body = $params['body'] ?? 'A lead has been automatically processed.';
         $priority = $params['priority'] ?? 'normal';
 
         $body = $this->interpolate($body, $context);
 
-        $notificationService = new LeadNotificationService();
+        $notificationService = new LeadNotificationService;
 
         // FIX: LeadNotificationService exposes send(), not notify()
         $notificationService->send(
@@ -38,8 +38,8 @@ class NotifyUserAction implements LeadActionInterface
 
         return [
             'notified_user_id' => $context->user_id,
-            'title'            => $title,
-            'priority'         => $priority,
+            'title' => $title,
+            'priority' => $priority,
         ];
     }
 
@@ -61,9 +61,9 @@ class NotifyUserAction implements LeadActionInterface
     protected function interpolate(string $template, Lead $lead): string
     {
         $replacements = [
-            '{lead_title}'  => $lead->title,
-            '{lead_id}'     => $lead->id,
-            '{lead_value}'  => $lead->lead_value ?? 'N/A',
+            '{lead_title}' => $lead->title,
+            '{lead_id}' => $lead->id,
+            '{lead_value}' => $lead->lead_value ?? 'N/A',
             '{person_name}' => $lead->person?->name ?? 'Unknown',
         ];
 

@@ -25,10 +25,13 @@ use Webkul\Lead\Models\LeadAutomationExecutionState;
  */
 class AutomationGuard
 {
-    protected const DEDUP_TTL       = 60;   // seconds
-    protected const LOOP_TTL        = 300;  // seconds
+    protected const DEDUP_TTL = 60;   // seconds
+
+    protected const LOOP_TTL = 300;  // seconds
+
     protected const FLOOD_THRESHOLD = 5;
-    protected const FLOOD_WINDOW    = 300;  // seconds
+
+    protected const FLOOD_WINDOW = 300;  // seconds
 
     // =====================================================================
     // Simple API — used by LeadTemperatureClassifier
@@ -38,13 +41,11 @@ class AutomationGuard
      * Check if execution should proceed.
      * Returns an array of failure reasons; empty array means "go ahead".
      *
-     * @param  Lead    $lead
-     * @param  string  $event
      * @return array<string>
      */
     public function check(Lead $lead, string $event): array
     {
-        $failures   = [];
+        $failures = [];
         $actionHash = [];
 
         [$allowed, $reason] = $this->canExecute($lead, $event, $actionHash);
@@ -58,10 +59,6 @@ class AutomationGuard
 
     /**
      * Record a successful execution (simple API for LeadTemperatureClassifier).
-     *
-     * @param  Lead    $lead
-     * @param  string  $event
-     * @return void
      */
     public function record(Lead $lead, string $event): void
     {
@@ -75,9 +72,6 @@ class AutomationGuard
     /**
      * Check if execution should proceed (full API with action hash).
      *
-     * @param  Lead    $lead
-     * @param  string  $event
-     * @param  array   $actionHash
      * @return array{bool, string|null, string|null}
      */
     public function canExecute(Lead $lead, string $event, array $actionHash): array
@@ -106,11 +100,6 @@ class AutomationGuard
 
     /**
      * Record successful execution (full API).
-     *
-     * @param  Lead    $lead
-     * @param  string  $event
-     * @param  array   $actionHash
-     * @return void
      */
     public function recordExecution(Lead $lead, string $event, array $actionHash): void
     {
@@ -123,12 +112,6 @@ class AutomationGuard
 
     /**
      * Record failed execution (still counts toward flood protection).
-     *
-     * @param  Lead    $lead
-     * @param  string  $event
-     * @param  array   $actionHash
-     * @param  string  $error
-     * @return void
      */
     public function recordFailure(Lead $lead, string $event, array $actionHash, string $error): void
     {
@@ -152,7 +135,7 @@ class AutomationGuard
 
     protected function getLoopKey(array $actionHash): string
     {
-        return 'action:' . md5(json_encode($actionHash));
+        return 'action:'.md5(json_encode($actionHash));
     }
 
     protected function getOrCreateState(int $leadId): LeadAutomationExecutionState
@@ -160,9 +143,9 @@ class AutomationGuard
         return LeadAutomationExecutionState::firstOrCreate(
             ['lead_id' => $leadId],
             [
-                'execution_count'       => 0,
+                'execution_count' => 0,
                 'execution_fingerprint' => [],
-                'last_executed_at'      => now(),
+                'last_executed_at' => now(),
             ]
         );
     }

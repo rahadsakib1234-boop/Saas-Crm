@@ -28,7 +28,7 @@ class LeadServiceProvider extends ServiceProvider
      */
     public function boot(Router $router): void
     {
-        $this->loadMigrationsFrom(__DIR__ . '/../Database/Migrations');
+        $this->loadMigrationsFrom(__DIR__.'/../Database/Migrations');
 
         LeadActionRegistry::boot();
 
@@ -42,12 +42,12 @@ class LeadServiceProvider extends ServiceProvider
     {
         // AutomationGuard — singleton so state is consistent within a request
         $this->app->singleton(AutomationGuard::class, function () {
-            return new AutomationGuard();
+            return new AutomationGuard;
         });
 
         // LeadNotificationService
         $this->app->singleton(LeadNotificationService::class, function () {
-            return new LeadNotificationService();
+            return new LeadNotificationService;
         });
 
         // FIX: LeadActionExecutor needs LeadNotificationService, NOT AutomationGuard
@@ -67,7 +67,7 @@ class LeadServiceProvider extends ServiceProvider
 
         // LeadAutomationRuleEngine — does not need AutomationGuard in its constructor
         $this->app->singleton(LeadAutomationRuleEngine::class, function ($app) {
-            return new LeadAutomationRuleEngine();
+            return new LeadAutomationRuleEngine;
         });
     }
 }

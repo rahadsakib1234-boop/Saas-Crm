@@ -3,6 +3,7 @@
 namespace Webkul\Lead\Services\Actions;
 
 use Carbon\Carbon;
+use Webkul\Activity\Models\Activity;
 use Webkul\Lead\Models\Lead;
 use Webkul\Lead\Services\LeadActionInterface;
 
@@ -24,30 +25,30 @@ class CreateTaskAction implements LeadActionInterface
             throw new \InvalidArgumentException('CreateTaskAction requires Lead context');
         }
 
-        if (! class_exists(\Webkul\Activity\Models\Activity::class)) {
+        if (! class_exists(Activity::class)) {
             return null;
         }
 
-        $title      = $params['title'] ?? 'Follow up with lead';
-        $dueOffset  = $params['due_offset_hours'] ?? 24;
+        $title = $params['title'] ?? 'Follow up with lead';
+        $dueOffset = $params['due_offset_hours'] ?? 24;
         $assignedTo = $params['assigned_to'] ?? $context->user_id;
         $description = $params['description'] ?? null;
 
-        $title       = $this->interpolate($title, $context);
+        $title = $this->interpolate($title, $context);
         $description = $description ? $this->interpolate($description, $context) : null;
 
         $scheduleFrom = Carbon::now();
         // FIX: use schedule_from / schedule_to (Activity's actual columns)
-        $scheduleTo   = Carbon::now()->addHours($dueOffset);
+        $scheduleTo = Carbon::now()->addHours($dueOffset);
 
-        $activity = \Webkul\Activity\Models\Activity::create([
-            'title'         => $title,
-            'comment'       => $description,
-            'type'          => 'task',
-            'is_done'       => 0,
-            'user_id'       => $assignedTo,
+        $activity = Activity::create([
+            'title' => $title,
+            'comment' => $description,
+            'type' => 'task',
+            'is_done' => 0,
+            'user_id' => $assignedTo,
             'schedule_from' => $scheduleFrom,
-            'schedule_to'   => $scheduleTo,
+            'schedule_to' => $scheduleTo,
         ]);
 
         // FIX: link to lead via pivot table (lead_activities), not a lead_id column
@@ -56,9 +57,9 @@ class CreateTaskAction implements LeadActionInterface
         }
 
         return [
-            'task_id'    => $activity?->id,
-            'title'      => $title,
-            'due_at'     => $scheduleTo->toDateTimeString(),
+            'task_id' => $activity?->id,
+            'title' => $title,
+            'due_at' => $scheduleTo->toDateTimeString(),
             'assigned_to' => $assignedTo,
         ];
     }
@@ -81,8 +82,8 @@ class CreateTaskAction implements LeadActionInterface
     protected function interpolate(string $template, Lead $lead): string
     {
         $replacements = [
-            '{lead_title}'  => $lead->title,
-            '{lead_id}'     => $lead->id,
+            '{lead_title}' => $lead->title,
+            '{lead_id}' => $lead->id,
             '{person_name}' => $lead->person?->name ?? 'Unknown',
         ];
 
