@@ -1,26 +1,32 @@
+[providers]
+providers = ["php"]
+
 [phases.setup]
-nixPkgs = [
-  "php83",
-  "php83Extensions.zip",
-  "php83Extensions.gd",
-  "php83Extensions.xml",
-  "php83Extensions.mbstring",
-  "php83Extensions.curl",
-  "php83Extensions.pdo",
-  "php83Extensions.pdo_mysql",
-  "php83Extensions.tokenizer",
-  "php83Extensions.bcmath",
-  "php83Extensions.fileinfo",
-  "php83Extensions.imap",
-  "php83Extensions.intl",
-  "php83Extensions.opcache",
-  "php83Extensions.redis",
-  "composer"
+aptPkgs = [
+  "php8.3",
+  "php8.3-cli",
+  "php8.3-common",
+  "php8.3-curl",
+  "php8.3-mbstring",
+  "php8.3-xml",
+  "php8.3-zip",
+  "php8.3-gd",
+  "php8.3-mysql",
+  "php8.3-pdo",
+  "php8.3-bcmath",
+  "php8.3-fileinfo",
+  "php8.3-tokenizer",
+  "php8.3-imap",
+  "php8.3-intl",
+  "php8.3-opcache",
+  "php8.3-calendar",
+  "composer",
+  "unzip"
 ]
 
 [phases.build]
 cmds = [
-  "composer install --no-dev --optimize-autoloader",
+  "composer install --optimize-autoloader --no-scripts --no-interaction --ignore-platform-reqs",
   "php artisan config:cache",
   "php artisan route:cache",
   "php artisan view:cache"
