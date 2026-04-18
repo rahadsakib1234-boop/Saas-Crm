@@ -42,7 +42,20 @@
     "config": {
         "optimize-autoloader": true,
         "platform": {
-            "php": "8.3.30"
+            "php": "8.3.0",
+            "ext-calendar": "8.3.0",
+            "ext-gd": "8.3.0",
+            "ext-zip": "8.3.0",
+            "ext-imap": "8.3.0",
+            "ext-curl": "8.3.0",
+            "ext-mbstring": "8.3.0",
+            "ext-xml": "8.3.0",
+            "ext-pdo": "8.3.0",
+            "ext-bcmath": "8.3.0",
+            "ext-fileinfo": "8.3.0",
+            "ext-tokenizer": "8.3.0",
+            "ext-intl": "8.3.0",
+            "ext-opcache": "8.3.0"
         },
         "preferred-install": "dist",
         "sort-packages": true,
