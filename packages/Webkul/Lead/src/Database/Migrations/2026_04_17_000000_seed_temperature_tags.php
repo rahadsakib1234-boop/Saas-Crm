@@ -3,30 +3,35 @@
 namespace Webkul\Lead\Database\Migrations;
 
 use Illuminate\Database\Migrations\Migration;
-use Webkul\Tag\Models\Tag;
-use Webkul\User\Models\UserProxy;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
     /**
      * Run the migrations.
+     *
+     * Uses raw DB insert instead of the Tag model to avoid
+     * user_id NOT NULL constraint on a fresh database where
+     * no users exist yet at migration time.
      */
     public function up(): void
     {
-        // Seed default temperature tags if they don't exist
-        $userId = UserProxy::first()?->id;
-
         $tags = [
-            ['name' => 'hot', 'color' => '#EF4444', 'user_id' => $userId],
-            ['name' => 'warm', 'color' => '#F59E0B', 'user_id' => $userId],
-            ['name' => 'cold', 'color' => '#3B82F6', 'user_id' => $userId],
+            ['name' => 'hot',  'color' => '#EF4444'],
+            ['name' => 'warm', 'color' => '#F59E0B'],
+            ['name' => 'cold', 'color' => '#3B82F6'],
         ];
 
-        foreach ($tags as $tagData) {
-            Tag::firstOrCreate(
-                ['name' => $tagData['name']],
-                $tagData
-            );
+        foreach ($tags as $tag) {
+            $exists = DB::table('tags')->where('name', $tag['name'])->exists();
+
+            if (! $exists) {
+                DB::table('tags')->insert(array_merge($tag, [
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]));
+            }
         }
     }
 
@@ -35,6 +40,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Tag::whereIn('name', ['hot', 'warm', 'cold'])->delete();
+        DB::table('tags')->whereIn('name', ['hot', 'warm', 'cold'])->delete();
     }
 };
