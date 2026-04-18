@@ -1,21 +1,18 @@
 <?php
 
-namespace Webkul\Lead\Database\Migrations;
-
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * Uses raw DB insert instead of the Tag model to avoid
-     * user_id NOT NULL constraint on a fresh database where
-     * no users exist yet at migration time.
-     */
     public function up(): void
     {
+        // Skip entirely if tags table doesn't exist
+        if (! Schema::hasTable('tags')) {
+            return;
+        }
+
         $tags = [
             ['name' => 'hot',  'color' => '#EF4444'],
             ['name' => 'warm', 'color' => '#F59E0B'],
@@ -23,20 +20,21 @@ return new class extends Migration
         ];
 
         foreach ($tags as $tag) {
-            $exists = DB::table('tags')->where('name', $tag['name'])->exists();
-
-            if (! $exists) {
-                DB::table('tags')->insert(array_merge($tag, [
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]));
+            try {
+                $exists = DB::table('tags')->where('name', $tag['name'])->exists();
+                if (! $exists) {
+                    DB::statement(
+                        "INSERT IGNORE INTO tags (name, color, created_at, updated_at) VALUES (?, ?, NOW(), NOW())",
+                        [$tag['name'], $tag['color']]
+                    );
+                }
+            } catch (\Throwable $e) {
+                // Silently skip — tags are non-critical seed data
+                continue;
             }
         }
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         DB::table('tags')->whereIn('name', ['hot', 'warm', 'cold'])->delete();
