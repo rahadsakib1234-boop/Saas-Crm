@@ -24,11 +24,11 @@ return new class extends Migration
                 $exists = DB::table('tags')->where('name', $tag['name'])->exists();
                 if (! $exists) {
                     DB::statement(
-                        "INSERT IGNORE INTO tags (name, color, created_at, updated_at) VALUES (?, ?, NOW(), NOW())",
+                        'INSERT IGNORE INTO tags (name, color, created_at, updated_at) VALUES (?, ?, NOW(), NOW())',
                         [$tag['name'], $tag['color']]
                     );
                 }
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 // Silently skip — tags are non-critical seed data
                 continue;
             }
